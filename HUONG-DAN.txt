@@ -1,0 +1,25 @@
+TIN TỨC ĐƯỜNG PHỐ - KHUNG GITHUB
+
+Cấu trúc:
+index.html       = trang chủ, danh sách bài
+quang-cao.html   = popup/trang quảng cáo dùng chung
+bai-01.html      = bài mẫu
+
+Khi đăng bài mới:
+1. Giữ nguyên các file bài cũ.
+2. Copy bai-01.html thành bai-02.html.
+3. Sửa tiêu đề, ngày, ảnh, nội dung và URL video trong bai-02.html.
+4. Upload bai-02.html lên GitHub.
+5. Mở index.html và thêm một thẻ .card trỏ tới bai-02.html.
+6. Commit thay đổi.
+
+Link mẫu:
+https://TEN-TAI-KHOAN.github.io/Tintuc24/
+https://TEN-TAI-KHOAN.github.io/Tintuc24/bai-01.html
+
+Lưu ý:
+- Không xóa bài cũ nếu muốn giữ link cũ.
+- Không đổi tên bai-01.html sau khi đã chia sẻ link.
+- quang-cao.html dùng chung cho các bài.
+- Nút X trong quảng cáo dùng history.back() để quay lại trang trước.
+- Safari/iPhone có thể chặn video tự phát có âm thanh; video nên có controls để người đọc bấm ▶.
