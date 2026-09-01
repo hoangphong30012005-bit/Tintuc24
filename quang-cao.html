@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quảng cáo</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;width:100%;min-height:100%;background:#222;font-family:Arial,sans-serif}
+.ad-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.84);padding:20px}
+.ad-box{position:relative;width:min(92vw,600px)}
+.ad-box img{display:block;width:100%;height:auto;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.ad-close{position:absolute;right:-10px;top:-18px;width:54px;height:54px;border-radius:50%;background:#fff;color:#555;font-size:42px;font-weight:bold;line-height:50px;text-align:center;text-decoration:none;z-index:10;box-shadow:0 3px 12px rgba(0,0,0,.35)}
+.ad-buy{display:block;margin-top:14px;background:#ee4d2d;color:#fff;text-align:center;text-decoration:none;padding:14px;border-radius:10px;font-size:18px;font-weight:bold}
+</style>
+</head>
+<body>
+<div class="ad-page">
+  <div class="ad-box">
+    <a class="ad-close" href="#" id="closeAd" aria-label="Mở Shopee">×</a>
+
+    <a href="https://s.shopee.vn/3qMlWZaBkP" target="_blank" rel="noopener noreferrer">
+      <img src="https://cdn.phototourl.com/free/2026-09-01-857865cd-565f-46ac-a40e-60a1bd475fe6.jpg" alt="Quảng cáo Shopee">
+    </a>
+
+    <a class="ad-buy" href="https://s.shopee.vn/3qMlWZaBkP" target="_blank" rel="noopener noreferrer">
+      🛒 XEM ƯU ĐÃI TRÊN SHOPEE
+    </a>
+  </div>
+</div>
+
+<script>
+(function(){
+  const shopee = 'https://s.shopee.vn/3qMlWZaBkP';
+  const fallback = 'index.html';
+
+  function getReturnUrl(){
+    const p = new URLSearchParams(location.search);
+    return p.get('return') || fallback;
+  }
+
+  document.getElementById('closeAd').addEventListener('click', function(e){
+    e.preventDefault();
+
+    const returnUrl = getReturnUrl();
+
+    /*
+      Một lần chạm:
+      1) cố mở Shopee/app bằng hành động của người dùng;
+      2) chuyển tab web hiện tại về bài video.
+      Khi người dùng quay lại trình duyệt, bài video đã sẵn sàng.
+    */
+    let opened = false;
+    try {
+      const w = window.open(shopee, '_blank');
+      opened = !!w;
+    } catch(e) {}
+
+    setTimeout(function(){
+      location.replace(returnUrl);
+    }, opened ? 150 : 700);
+  });
+})();
+</script>
+</body>
+</html>
