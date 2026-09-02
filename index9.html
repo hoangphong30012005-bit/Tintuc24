@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0,
+      maximum-scale=1.0, user-scalable=no">
+
+<title>Đang mở TikTok...</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+html,body{
+    margin:0;
+    padding:0;
+    width:100%;
+    min-height:100%;
+    font-family:-apple-system,BlinkMacSystemFont,
+    "Segoe UI",Arial,sans-serif;
+}
+
+body{
+    background:#000;
+    color:#fff;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.container{
+    width:92%;
+    max-width:430px;
+    background:#171717;
+    border-radius:22px;
+    padding:32px 22px;
+    text-align:center;
+    box-shadow:0 10px 40px rgba(0,0,0,.5);
+}
+
+.tiktok-icon{
+    width:72px;
+    height:72px;
+    margin:0 auto 20px;
+    border-radius:18px;
+    background:#fff;
+    color:#000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:43px;
+    font-weight:bold;
+}
+
+h1{
+    font-size:23px;
+    margin:0 0 12px;
+}
+
+.message{
+    color:#aaa;
+    line-height:1.55;
+    font-size:15px;
+    margin-bottom:22px;
+}
+
+.loading{
+    width:42px;
+    height:42px;
+    margin:20px auto;
+    border:4px solid #444;
+    border-top-color:#fff;
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+.buttons{
+    display:none;
+}
+
+.btn{
+    display:block;
+    width:100%;
+    padding:15px;
+    margin:10px 0;
+    border-radius:12px;
+    text-decoration:none;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.btn-tiktok{
+    background:#fff;
+    color:#000;
+}
+
+.btn-safari{
+    background:#333;
+    color:#fff;
+}
+
+.note{
+    display:none;
+    margin-top:18px;
+    padding:14px;
+    border-radius:12px;
+    background:#252525;
+    color:#aaa;
+    font-size:13px;
+    line-height:1.5;
+}
+
+#desktop{
+    display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="tiktok-icon">♪</div>
+
+    <h1 id="title">
+        Đang mở TikTok...
+    </h1>
+
+    <div class="message" id="message">
+        Vui lòng chờ trong giây lát.
+    </div>
+
+    <div class="loading" id="loading"></div>
+
+    <div class="buttons" id="buttons">
+
+        <a class="btn btn-tiktok"
+           id="tiktokButton"
+           href="#">
+            🎵 MỞ TRONG ỨNG DỤNG TIKTOK
+        </a>
+
+        <a class="btn btn-safari"
+           id="safariButton"
+           href="#"
+           target="_blank"
+           rel="noopener">
+            🌐 MỞ BẰNG SAFARI
+        </a>
+
+    </div>
+
+    <div class="note" id="note">
+        Nếu Facebook không cho phép mở ứng dụng,
+        hãy chọn <b>Mở bằng Safari</b>.
+        Sau đó TikTok có thể chuyển liên kết sang ứng dụng
+        nếu TikTok đã được cài trên iPhone.
+    </div>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   1. DÁN LINK VIDEO TIKTOK CỦA BẠN VÀO ĐÂY
+   ===================================================== */
+
+const TIKTOK_URL =
+"https://www.tiktok.com/@tennguoidung/video/123456789";
+
+
+/* =====================================================
+   2. NHẬN DIỆN THIẾT BỊ
+   ===================================================== */
+
+const ua = navigator.userAgent || "";
+
+const isIOS =
+/iPhone|iPad|iPod/i.test(ua);
+
+const isAndroid =
+/Android/i.test(ua);
+
+const isFacebook =
+/FBAN|FBAV|FBIOS|FB_IAB|FB4A/i.test(ua);
+
+
+/* =====================================================
+   3. DOM
+   ===================================================== */
+
+const title =
+document.getElementById("title");
+
+const message =
+document.getElementById("message");
+
+const loading =
+document.getElementById("loading");
+
+const buttons =
+document.getElementById("buttons");
+
+const note =
+document.getElementById("note");
+
+const tiktokButton =
+document.getElementById("tiktokButton");
+
+const safariButton =
+document.getElementById("safariButton");
+
+
+/* =====================================================
+   4. GÁN LINK
+   ===================================================== */
+
+tiktokButton.href =
+TIKTOK_URL;
+
+safariButton.href =
+TIKTOK_URL;
+
+
+/* =====================================================
+   5. HIỂN THỊ NÚT
+   ===================================================== */
+
+function showButtons(){
+
+    loading.style.display =
+        "none";
+
+    buttons.style.display =
+        "block";
+
+    note.style.display =
+        "block";
+}
+
+
+/* =====================================================
+   6. IPHONE + FACEBOOK
+   ===================================================== */
+
+function openIOSFromFacebook(){
+
+    title.innerText =
+        "Đang thử mở TikTok...";
+
+    message.innerText =
+        "Facebook đang mở liên kết. " +
+        "Đang thử chuyển sang ứng dụng TikTok.";
+
+    /*
+     * Thử Universal Link trước.
+     *
+     * Nếu Facebook/iOS cho phép,
+     * TikTok app có thể được mở.
+     */
+
+    window.location.href =
+        TIKTOK_URL;
+
+
+    /*
+     * Nếu sau một khoảng thời gian
+     * trang vẫn còn tồn tại,
+     * coi như Facebook đã chặn chuyển app.
+     */
+
+    setTimeout(function(){
+
+        title.innerText =
+            "Không tự mở được TikTok";
+
+        message.innerText =
+            "Facebook trên iPhone có thể chặn " +
+            "việc chuyển sang ứng dụng.";
+
+        showButtons();
+
+    },1800);
+}
+
+
+/* =====================================================
+   7. IPHONE KHÔNG PHẢI FACEBOOK
+   ===================================================== */
+
+function openIOS(){
+
+    title.innerText =
+        "Đang mở TikTok...";
+
+    message.innerText =
+        "Đang chuyển sang ứng dụng TikTok.";
+
+    window.location.href =
+        TIKTOK_URL;
+
+    setTimeout(function(){
+
+        title.innerText =
+            "Mở TikTok";
+
+        message.innerText =
+            "Nếu ứng dụng chưa mở, hãy chọn " +
+            "Mở bằng Safari.";
+
+        showButtons();
+
+    },1800);
+}
+
+
+/* =====================================================
+   8. ANDROID
+   ===================================================== */
+
+function openAndroid(){
+
+    title.innerText =
+        "Đang mở TikTok...";
+
+    message.innerText =
+        "Đang thử mở ứng dụng TikTok.";
+
+    /*
+     * Android Intent.
+     */
+
+    const cleanURL =
+        TIKTOK_URL.replace(
+            /^https?:\/\//,
+            ""
+        );
+
+    const intentURL =
+        "intent://" +
+        cleanURL +
+        "#Intent;" +
+        "scheme=https;" +
+        "package=com.zhiliaoapp.musically;" +
+        "S.browser_fallback_url=" +
+        encodeURIComponent(TIKTOK_URL) +
+        ";end";
+
+    window.location.href =
+        intentURL;
+
+    setTimeout(function(){
+
+        window.location.href =
+            TIKTOK_URL;
+
+    },2500);
+}
+
+
+/* =====================================================
+   9. MÁY TÍNH
+   ===================================================== */
+
+function openDesktop(){
+
+    title.innerText =
+        "Đang chuyển đến TikTok...";
+
+    message.innerText =
+        "TikTok Web sẽ được mở.";
+
+    setTimeout(function(){
+
+        window.location.href =
+            TIKTOK_URL;
+
+    },700);
+}
+
+
+/* =====================================================
+   10. KHỞI CHẠY
+   ===================================================== */
+
+window.addEventListener(
+    "load",
+    function(){
+
+        /*
+         * iPhone + Facebook
+         * ưu tiên xử lý riêng.
+         */
+
+        if(isIOS && isFacebook){
+
+            openIOSFromFacebook();
+
+        }
+
+        /*
+         * iPhone Safari / trình duyệt khác
+         */
+
+        else if(isIOS){
+
+            openIOS();
+
+        }
+
+        /*
+         * Android
+         */
+
+        else if(isAndroid){
+
+            openAndroid();
+
+        }
+
+        /*
+         * Máy tính
+         */
+
+        else{
+
+            openDesktop();
+
+        }
+
+    }
+);
+
+</script>
+
+</body>
+</html>
