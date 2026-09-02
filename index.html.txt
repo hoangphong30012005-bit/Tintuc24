@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Tin Tức Đường Phố</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main class="page">
+    <h1>Tin Tức Đường Phố</h1>
+    <p>Xem video đầy đủ trên TikTok.</p>
+  </main>
+
+  <div class="overlay">
+
+    <div class="popup">
+
+      <a
+        class="close"
+        href="https://vt.tiktok.com/ZS9BsCRKVFqYj-uwxfQ/"
+        aria-label="Mở TikTok">
+        ×
+      </a>
+
+      <img
+        src="images/popup.jpg"
+        alt="TikTok">
+
+      <h2>Xem video trên TikTok</h2>
+
+      <p>Nhấn nút bên dưới để mở TikTok.</p>
+
+      <a
+        class="button"
+        href="https://vt.tiktok.com/ZS9BsCRKVFqYj-uwxfQ/">
+        ▶ MỞ TRÊN TIKTOK
+      </a>
+
+    </div>
+
+  </div>
+
+</body>
+</html>
