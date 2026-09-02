@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>Mở video trên TikTok</title>
+  <style>
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;font-family:Arial,Helvetica,sans-serif}
+    body{
+      min-height:100vh;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,#111,#252525);color:#fff;padding:20px
+    }
+    .box{
+      width:min(92vw,430px);background:#fff;color:#111;border-radius:22px;
+      padding:26px 20px 22px;text-align:center;box-shadow:0 20px 60px #0008
+    }
+    .logo{
+      width:72px;height:72px;border-radius:18px;margin:0 auto 16px;
+      display:flex;align-items:center;justify-content:center;
+      background:#000;color:#fff;font-size:32px;font-weight:700
+    }
+    h1{font-size:23px;margin:0 0 10px}
+    p{font-size:15px;line-height:1.5;color:#666;margin:0 0 18px}
+    .button{
+      display:block;width:100%;padding:15px 16px;border-radius:12px;
+      text-decoration:none;font-weight:700;margin:10px 0
+    }
+    .primary{background:#000;color:#fff}
+    .secondary{background:#eee;color:#111}
+    .small{font-size:12px;color:#888;margin-top:14px}
+    .status{font-size:13px;color:#555;min-height:20px;margin-bottom:5px}
+    .hidden{display:none}
+  </style>
+</head>
+<body>
+  <main class="box">
+    <div class="logo">♪</div>
+    <h1>Xem video trên TikTok</h1>
+    <p id="message">Đang chuẩn bị mở TikTok...</p>
+    <div class="status" id="status"></div>
+
+    <a id="openTikTok" class="button primary" href="#">
+      ▶ MỞ TRÊN TIKTOK
+    </a>
+
+    <a id="openSafari" class="button secondary hidden" href="#">
+      🌐 MỞ TRÊN TRÌNH DUYỆT
+    </a>
+
+    <p class="small">
+      Nếu TikTok không tự mở, hãy nhấn nút bên trên.
+    </p>
+  </main>
+
+<script>
+(function () {
+  /*
+   * LINK TIKTOK ĐÍCH
+   * Bạn chỉ cần thay URL này nếu muốn đổi video.
+   */
+  const TIKTOK_URL = "https://vt.tiktok.com/ZS9BsCRKVFqYj-uwxfQ/";
+
+  const ua = navigator.userAgent || "";
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  const isAndroid = /Android/i.test(ua);
+  const isFacebook = /FBAN|FBAV|FBIOS|FB_IAB|FB4A|FBSN/i.test(ua);
+  const isTikTokBrowser = /TikTok/i.test(ua);
+
+  const message = document.getElementById("message");
+  const status = document.getElementById("status");
+  const openTikTok = document.getElementById("openTikTok");
+  const openSafari = document.getElementById("openSafari");
+
+  openTikTok.href = TIKTOK_URL;
+
+  /*
+   * Trên iPhone, Safari có thể mở TikTok nếu URL TikTok
+   * đã được hệ thống/TikTok hỗ trợ. Tuy nhiên Facebook
+   * In-App Browser có thể chặn chuyển app.
+   */
+  openSafari.href = TIKTOK_URL;
+
+  function setText(a, b) {
+    message.textContent = a;
+    status.textContent = b || "";
+  }
+
+  function showSafari() {
+    openSafari.classList.remove("hidden");
+  }
+
+  function openAndroidApp() {
+    /*
+     * Android intent: thử mở ứng dụng TikTok.
+     * Nếu bị chặn/không cài app thì fallback về URL web.
+     */
+    const clean = TIKTOK_URL.replace(/^https?:\/\//, "");
+    const intent =
+      "intent://" + clean +
+      "#Intent;scheme=https;package=com.zhiliaoapp.musically;" +
+      "S.browser_fallback_url=" + encodeURIComponent(TIKTOK_URL) +
+      ";end";
+
+    window.location.href = intent;
+  }
+
+  function tryIOS() {
+    setText(
+      isFacebook
+        ? "Bạn đang mở từ Facebook trên iPhone."
+        : "Đang thử mở TikTok...",
+      "Nếu Facebook giữ trang này, hãy nhấn “MỞ TRÊN TIKTOK”."
+    );
+    showSafari();
+
+    /*
+     * Không dùng custom scheme TikTok để tránh tạo lỗi/blank
+     * trong các trình duyệt in-app. Dùng HTTPS TikTok URL.
+     */
+    window.location.href = TIKTOK_URL;
+
+    /*
+     * Nếu vẫn ở trang này sau một khoảng ngắn,
+     * hiển thị nút thủ công.
+     */
+    setTimeout(showSafari, 1200);
+  }
+
+  function tryAndroid() {
+    setText(
+      isFacebook
+        ? "Bạn đang mở từ Facebook trên Android."
+        : "Đang thử mở TikTok App...",
+      "Nếu không mở được, TikTok Web sẽ được sử dụng."
+    );
+
+    try {
+      openAndroidApp();
+    } catch (e) {
+      window.location.href = TIKTOK_URL;
+    }
+
+    setTimeout(showSafari, 1800);
+  }
+
+  function desktop() {
+    setText("Mở video trên TikTok.", "Bạn có thể nhấn nút bên dưới.");
+    showSafari();
+  }
+
+  /*
+   * Nếu người dùng bấm nút:
+   * - Android: thử app một lần nữa.
+   * - iPhone/desktop: dùng URL TikTok chính thức.
+   */
+  openTikTok.addEventListener("click", function (e) {
+    e.preventDefault();
+
+    if (isAndroid) {
+      openAndroidApp();
+    } else {
+      window.location.href = TIKTOK_URL;
+    }
+  });
+
+  openSafari.addEventListener("click", function () {
+    window.location.href = TIKTOK_URL;
+  });
+
+  if (isAndroid) {
+    tryAndroid();
+  } else if (isIOS) {
+    tryIOS();
+  } else {
+    desktop();
+  }
+
+  /*
+   * Ghi chú: không thể ép iPhone/Facebook 100%.
+   * Universal Links chỉ hoạt động khi domain và ứng dụng
+   * được chính ứng dụng đó cấu hình/ủy quyền.
+   */
+})();
+</script>
+</body>
+</html>
