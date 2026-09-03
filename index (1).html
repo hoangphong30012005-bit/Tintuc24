@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TinTuc24</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f5f5;color:#222;font-family:Arial,sans-serif}
+header{background:#111;color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+header h1{margin:0;font-size:22px}.wrap{max-width:850px;margin:auto;padding:18px}
+button{border:0;border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:700}
+.adminBtn{background:#fff;color:#111}.danger{background:#d92323;color:#fff}.primary{background:#111;color:#fff}
+.card{background:#fff;border-radius:12px;padding:16px;margin:12px 0;box-shadow:0 2px 8px #0001}
+.card h2{margin:0 0 8px;font-size:20px}.muted{color:#666;font-size:14px}
+.card img{width:100%;max-height:260px;object-fit:cover;border-radius:9px;margin-top:10px}
+.hidden{display:none!important}input,textarea{width:100%;padding:11px;border:1px solid #ccc;border-radius:8px;margin:5px 0 12px;font:inherit}
+textarea{min-height:110px}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}
+#reader h2,#manager h2{margin-top:5px}.notice{padding:12px;background:#fff3cd;border-radius:8px;margin-bottom:14px}
+.overlay{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}
+.modal{background:#fff;color:#222;width:min(420px,100%);border-radius:14px;padding:20px}.modal h2{margin-top:0}
+.ad{min-height:180px;background:#eee;display:flex;align-items:center;justify-content:center;border-radius:10px;margin:12px 0;font-weight:700}
+.video{background:#111;color:#fff;padding:25px;border-radius:10px;margin-top:10px}
+.small{font-size:13px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="siteTitle">TinTuc24</h1>
+  <button class="adminBtn" onclick="openLogin()">⚙ Quản lý</button>
+</header>
+
+<main class="wrap">
+  <section id="reader">
+    <h2>Danh sách tin</h2>
+    <div id="newsList"></div>
+  </section>
+
+  <section id="manager" class="hidden">
+    <div class="row">
+      <h2 style="flex:1">Trang quản lý</h2>
+      <button onclick="showReader()">← Trang đọc</button>
+    </div>
+
+    <div class="card">
+      <h3>Đăng tin mới</h3>
+      <input id="newTitle" placeholder="Tiêu đề tin">
+      <textarea id="newContent" placeholder="Nội dung tin"></textarea>
+      <input id="newImage" placeholder="Link ảnh đại diện">
+      <input id="newVideo1" placeholder="Link Video 1">
+      <input id="newVideo2" placeholder="Link Video 2">
+      <input id="newVideo3" placeholder="Link Video 3">
+      <button class="primary" onclick="addNews()">＋ Đăng tin</button>
+    </div>
+
+    <div class="card">
+      <h3>Cài đặt</h3>
+      <input id="avatar" placeholder="Link ảnh đại diện">
+      <input id="adImage" placeholder="Link ảnh quảng cáo">
+      <input id="shareImage" placeholder="Link ảnh chia sẻ">
+      <input id="shopee" placeholder="Link Shopee">
+      <button class="primary" onclick="saveSettings()">💾 Lưu cài đặt</button>
+    </div>
+
+    <div class="card">
+      <h3>Danh sách tin đã đăng</h3>
+      <div id="manageList"></div>
+    </div>
+  </section>
+</main>
+
+<div id="login" class="overlay hidden">
+  <div class="modal">
+    <h2>Đăng nhập quản lý</h2>
+    <input id="password" type="password" placeholder="Nhập mật khẩu">
+    <div class="row">
+      <button onclick="closeLogin()">Hủy</button>
+      <button class="primary" onclick="login()">Đăng nhập</button>
+    </div>
+    <p id="loginError" class="small" style="color:#d92323"></p>
+  </div>
+</div>
+
+<script>
+const ADMIN_PASSWORD = "hoang2005@";
+
+const defaultData = {
+  settings:{avatar:"",adImage:"",shareImage:"",shopee:""},
+  news:[
+    {id:Date.now(),title:"Tin tức mới",content:"Nội dung tin mẫu. Bạn có thể sửa hoặc xóa tin này trong trang quản lý.",image:"",videos:["","",""]}
+  ]
+};
+
+let data = JSON.parse(localStorage.getItem("tintuc24_data") || "null") || defaultData;
+let loggedIn = false;
+
+function save(){localStorage.setItem("tintuc24_data",JSON.stringify(data));}
+
+function escapeHtml(s=""){
+  return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+
+function renderReader(){
+  const box=document.getElementById("newsList");
+  if(!data.news.length){box.innerHTML='<div class="card">Chưa có tin.</div>';return;}
+  box.innerHTML=data.news.map(n=>`
+    <article class="card">
+      <h2>${escapeHtml(n.title)}</h2>
+      <div class="muted">Tin tức</div>
+      ${n.image?`<img src="${escapeHtml(n.image)}" alt="">`:""}
+      <p>${escapeHtml(n.content).replace(/\n/g,"<br>")}</p>
+      <button class="primary" onclick="openNews(${n.id})">Xem tin →</button>
+    </article>`).join("");
+}
+
+function openNews(id){
+  const n=data.news.find(x=>x.id===id); if(!n)return;
+  const ad=data.settings.adImage;
+  const shopee=data.settings.shopee;
+  let html=`<div class="overlay" id="newsOverlay"><div class="modal" style="max-height:90vh;overflow:auto">
+    <h2>${escapeHtml(n.title)}</h2>`;
+  if(ad) html+=`<img src="${escapeHtml(ad)}" style="width:100%;border-radius:8px" alt="">`;
+  else html+=`<div class="ad">QUẢNG CÁO</div>`;
+  html+=`<button class="danger" onclick="document.getElementById('newsOverlay').remove()">✕ Đóng quảng cáo</button>`;
+  if(shopee) html+=`<p><a href="${escapeHtml(shopee)}" target="_blank" rel="noopener">🛒 Xem trên Shopee</a></p>`;
+  html+=`<hr><p>${escapeHtml(n.content).replace(/\n/g,"<br>")}</p>`;
+  n.videos.forEach((v,i)=>{if(v)html+=`<div class="video"><b>Video ${i+1}</b><br><a style="color:#fff" href="${escapeHtml(v)}" target="_blank" rel="noopener">▶ Mở video</a></div>`});
+  html+=`</div></div>`;
+  document.body.insertAdjacentHTML("beforeend",html);
+}
+
+function openLogin(){document.getElementById("login").classList.remove("hidden");}
+function closeLogin(){document.getElementById("login").classList.add("hidden");}
+function login(){
+  if(document.getElementById("password").value===ADMIN_PASSWORD){
+    loggedIn=true;closeLogin();showManager();
+  }else document.getElementById("loginError").textContent="Sai mật khẩu.";
+}
+function showManager(){
+  if(!loggedIn)return;
+  document.getElementById("reader").classList.add("hidden");
+  document.getElementById("manager").classList.remove("hidden");
+  document.getElementById("avatar").value=data.settings.avatar;
+  document.getElementById("adImage").value=data.settings.adImage;
+  document.getElementById("shareImage").value=data.settings.shareImage;
+  document.getElementById("shopee").value=data.settings.shopee;
+  renderManage();
+}
+function showReader(){
+  document.getElementById("manager").classList.add("hidden");
+  document.getElementById("reader").classList.remove("hidden");
+  renderReader();
+}
+function addNews(){
+  const title=document.getElementById("newTitle").value.trim();
+  const content=document.getElementById("newContent").value.trim();
+  if(!title){alert("Vui lòng nhập tiêu đề.");return;}
+  data.news.unshift({
+    id:Date.now(),title,content,
+    image:document.getElementById("newImage").value.trim(),
+    videos:[
+      document.getElementById("newVideo1").value.trim(),
+      document.getElementById("newVideo2").value.trim(),
+      document.getElementById("newVideo3").value.trim()
+    ]
+  });
+  save();
+  ["newTitle","newContent","newImage","newVideo1","newVideo2","newVideo3"].forEach(id=>document.getElementById(id).value="");
+  renderManage();renderReader();
+  alert("Đã đăng tin mới. Tin cũ vẫn được giữ nguyên.");
+}
+function saveSettings(){
+  data.settings={
+    avatar:document.getElementById("avatar").value.trim(),
+    adImage:document.getElementById("adImage").value.trim(),
+    shareImage:document.getElementById("shareImage").value.trim(),
+    shopee:document.getElementById("shopee").value.trim()
+  };
+  save();renderReader();alert("Đã lưu cài đặt.");
+}
+function renderManage(){
+  document.getElementById("manageList").innerHTML=data.news.map(n=>`
+    <div class="card">
+      <b>${escapeHtml(n.title)}</b>
+      <div class="row" style="margin-top:8px">
+        <button onclick="editNews(${n.id})">✏️ Sửa tin</button>
+        <button class="danger" onclick="deleteNews(${n.id})">🗑️ Xóa tin</button>
+      </div>
+    </div>`).join("");
+}
+function editNews(id){
+  const n=data.news.find(x=>x.id===id);if(!n)return;
+  const title=prompt("Tiêu đề:",n.title);if(title===null)return;
+  const content=prompt("Nội dung:",n.content);if(content===null)return;
+  n.title=title;n.content=content;
+  n.image=prompt("Link ảnh:",n.image||"")||"";
+  for(let i=0;i<3;i++) n.videos[i]=prompt("Link Video "+(i+1)+":",n.videos[i]||"")||"";
+  save();renderManage();renderReader();
+}
+function deleteNews(id){
+  if(!confirm("Xóa tin này?"))return;
+  data.news=data.news.filter(n=>n.id!==id);
+  save();renderManage();renderReader();
+}
+
+renderReader();
+</script>
+</body>
+</html>
