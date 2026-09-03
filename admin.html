@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Quản lý</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eef1f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial;color:#111}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.box,.panel{background:#fff;border-radius:18px;box-shadow:0 8px 30px #0001}
+.box{width:100%;max-width:420px;padding:25px}.wrap{max-width:800px;margin:auto;padding:14px}
+.top{background:#111;color:#fff;padding:18px 16px}.top strong{font-size:20px}.top small{display:block;color:#aaa;margin-top:4px}
+.panel{padding:18px;margin:14px 0}h1,h2{margin-top:0}label{font-weight:700;font-size:14px}
+input,textarea{width:100%;padding:13px;border:1px solid #d7dbe0;border-radius:11px;font-size:16px;margin:7px 0 15px}textarea{min-height:150px;resize:vertical}
+button{border:0;border-radius:11px;padding:13px 16px;font-size:16px;font-weight:700}.primary{background:#111;color:#fff;width:100%}
+.save{background:#087f3f;color:#fff;width:100%}.back{display:block;text-align:center;padding:15px;color:#555;text-decoration:none}
+.notice{background:#fff7d6;border-radius:10px;padding:12px;font-size:13px;line-height:1.5}.status{color:#087f3f;margin-top:10px;font-size:14px}
+</style>
+</head>
+<body>
+
+<div id="login" class="login">
+<div class="box">
+<h1>🔐 Quản lý website</h1>
+<p>Nhập mật khẩu để quản lý nội dung.</p>
+<input id="password" type="password" placeholder="Mật khẩu" autocomplete="current-password">
+<button class="primary" onclick="login()">ĐĂNG NHẬP</button>
+<div id="error" style="color:#c00;margin-top:10px"></div>
+</div>
+</div>
+
+<div id="app" style="display:none">
+<header class="top"><strong>⚙️ Trang quản lý</strong><small>Thay nội dung, video và link Shopee</small></header>
+<main class="wrap">
+
+<section class="panel">
+<h2>📝 Bài viết</h2>
+<label>Tiêu đề / STT</label>
+<input id="title" placeholder="Ví dụ: Tin số 01">
+<label>Nội dung bài viết</label>
+<textarea id="content" placeholder="Nhập nội dung..."></textarea>
+</section>
+
+<section class="panel">
+<h2>🎬 Video</h2>
+<label>URL Video 1</label>
+<input id="video1" type="url" placeholder="https://.../video1.mp4">
+<label>URL Video 2</label>
+<input id="video2" type="url" placeholder="https://.../video2.mp4">
+<div class="notice">Có thể thay URL bất cứ lúc nào. Nên dùng URL MP4 trực tiếp.</div>
+</section>
+
+<section class="panel">
+<h2>🛒 Link Shopee</h2>
+<label>URL Shopee</label>
+<input id="shopee" type="url" placeholder="https://s.shopee.vn/...">
+<div class="notice">Link Shopee được lưu sẵn để dùng cho chức năng quảng cáo/điều hướng khi bạn thêm vào trang đọc.</div>
+</section>
+
+<section class="panel">
+<h2>💾 Lưu</h2>
+<button class="save" onclick="save()">LƯU TẤT CẢ THAY ĐỔI</button>
+<div id="status" class="status"></div>
+</section>
+
+<a class="back" href="index.html">← Quay lại trang đọc</a>
+</main>
+</div>
+
+<script>
+const PASSWORD="hoang2005@@";
+const defaults={title:"Tin tức mới nhất",content:"Nội dung bài viết của bạn ở đây.",video1:"",video2:"",shopee:""};
+
+function login(){
+ if(document.getElementById("password").value===PASSWORD){
+   sessionStorage.setItem("adminLogged","1");showApp();
+ }else document.getElementById("error").textContent="❌ Mật khẩu không đúng";
+}
+function showApp(){
+ document.getElementById("login").style.display="none";
+ document.getElementById("app").style.display="block";
+ load();
+}
+function load(){
+ let s=defaults;
+ try{s={...defaults,...JSON.parse(localStorage.getItem("newsSettings")||"{}")}}catch(e){}
+ title.value=s.title;content.value=s.content;video1.value=s.video1;video2.value=s.video2;shopee.value=s.shopee;
+}
+function save(){
+ const s={title:title.value.trim(),content:content.value,video1:video1.value.trim(),video2:video2.value.trim(),shopee:shopee.value.trim()};
+ localStorage.setItem("newsSettings",JSON.stringify(s));
+ document.getElementById("status").textContent="✅ Đã lưu tất cả thay đổi.";
+}
+if(sessionStorage.getItem("adminLogged")==="1")showApp();
+</script>
+</body></html>
