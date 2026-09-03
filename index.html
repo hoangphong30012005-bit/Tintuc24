@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phân quyền hiện tại</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #000;
+      color: #f5f5f5;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      line-height: 1.65;
+    }
+
+    .page {
+      width: min(100%, 760px);
+      margin: 0 auto;
+      padding: 34px 22px 50px;
+    }
+
+    .intro {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 26px;
+    }
+
+    h2 {
+      font-size: 22px;
+      margin: 24px 0 8px;
+    }
+
+    h3 {
+      font-size: 19px;
+      margin: 18px 0 8px;
+    }
+
+    ul {
+      margin: 0 0 10px;
+      padding-left: 30px;
+    }
+
+    li {
+      padding: 2px 0;
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .ok {
+      color: #fff;
+    }
+
+    .no {
+      color: #ff2b2b;
+      font-weight: 800;
+    }
+
+    .password {
+      display: inline-block;
+      background: #555;
+      color: #fff;
+      padding: 1px 7px;
+      border-radius: 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: .92em;
+    }
+
+    .download {
+      margin-top: 22px;
+      font-size: 18px;
+    }
+
+    .download a {
+      color: #fff;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .note {
+      margin-top: 18px;
+      font-size: 17px;
+      font-weight: 500;
+    }
+
+    .note strong {
+      font-weight: 800;
+    }
+
+    .code {
+      display: inline-block;
+      background: #222;
+      border-radius: 5px;
+      padding: 0 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    @media (max-width: 480px) {
+      .page { padding: 28px 22px 40px; }
+      li, .intro, .download { font-size: 17px; }
+      h2 { font-size: 21px; }
+      h3 { font-size: 18px; }
+      .note { font-size: 16px; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <p class="intro">
+      Đã sửa lại để trang đọc chỉ dành cho người xem, không còn nút <strong>＋</strong> để đăng tin.
+    </p>
+
+    <h2>Phân quyền hiện tại</h2>
+
+    <h3>Trang đọc</h3>
+    <ul>
+      <li>Chỉ xem danh sách tin.</li>
+      <li>Bấm tin → quảng cáo → X → Shopee → quay lại → video.</li>
+      <li><span class="no">❌</span> Không có nút đăng tin.</li>
+      <li><span class="no">❌</span> Không có nút thêm video.</li>
+    </ul>
+
+    <h3>Trang quản lý</h3>
+    <ul>
+      <li>Phải nhập mật khẩu <span class="password">••••••••••</span>.</li>
+      <li>＋ Đăng tin mới.</li>
+      <li>✏️ Sửa tin.</li>
+      <li>🗑️ Xóa tin.</li>
+      <li>Thêm/xóa Video 1, 2, 3...</li>
+      <li>Đổi ảnh đại diện, ảnh quảng cáo, ảnh chia sẻ, link Shopee.</li>
+      <li>Tin mới không làm mất tin cũ.</li>
+    </ul>
+
+    <p class="download">
+      🌐 📥 <a href="#" onclick="return false;">Tải index.html bản mới</a>
+    </p>
+
+    <p class="note">
+      <strong>Lưu ý quan trọng:</strong>
+      bản HTML này là kiểu quản lý phía trình duyệt
+      (<span class="code">localStorage</span>), nên mật khẩu không phải bảo mật đối với dữ liệu quản lý.
+    </p>
+  </main>
+</body>
+</html>
