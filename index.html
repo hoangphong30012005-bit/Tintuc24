@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Trang đọc - Video 1 + Video 2</title>
+
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+body{min-height:100vh}
+button{font:inherit}
+.header{
+  position:sticky;top:0;z-index:20;background:#111;
+  padding:14px 16px calc(14px + env(safe-area-inset-top));
+  text-align:center;border-bottom:1px solid #333
+}
+.header h1{margin:0;font-size:20px}
+.container{width:100%;max-width:720px;margin:0 auto;padding:14px}
+.article{
+  background:#111;border-radius:14px;padding:16px;margin-bottom:14px
+}
+.article h2{margin:0 0 10px;font-size:21px}
+.article p{color:#ddd;line-height:1.6;margin:8px 0}
+.video-card{
+  position:relative;background:#000;border-radius:14px;overflow:hidden;
+  margin:16px 0;border:1px solid #333
+}
+.video-card.locked::after{
+  content:"🔒 Video đang khóa";
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.72);font-size:19px;font-weight:700;z-index:4
+}
+.video-title{padding:10px 12px;background:#181818;font-weight:700}
+video{display:block;width:100%;height:auto;max-height:78vh;background:#000;object-fit:contain}
+.video-overlay{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:68px;height:68px;border:0;border-radius:50%;background:rgba(255,255,255,.92);
+  color:#111;font-size:28px;z-index:5;display:flex;align-items:center;justify-content:center
+}
+.video-overlay.hidden{display:none}
+.custom-controls{
+  position:absolute;left:0;right:0;bottom:0;padding:10px;
+  background:linear-gradient(transparent,rgba(0,0,0,.92));z-index:6
+}
+.progress{width:100%;height:5px;accent-color:#ff5722}
+.control-row{display:flex;align-items:center;gap:8px;margin-top:7px}
+.ctrl{
+  background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);
+  border-radius:8px;padding:6px 9px
+}
+.time{font-size:13px;margin-right:auto}
+.sound-note{text-align:center;color:#aaa;font-size:13px;padding:5px 10px 10px}
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(5px);
+  -webkit-backdrop-filter:blur(5px);z-index:100;display:flex;align-items:center;justify-content:center;
+  padding:20px
+}
+.ad-box{width:min(92vw,430px);background:#111;border-radius:16px;overflow:hidden;text-align:center;box-shadow:0 10px 40px #000}
+.ad-box img{display:block;width:100%;max-height:72vh;object-fit:contain;background:#000}
+.close-ad{
+  display:block;width:calc(100% - 24px);margin:12px;padding:13px;
+  border:0;border-radius:10px;background:#ff5722;color:#fff;font-weight:800;font-size:17px
+}
+.continue-box{width:min(92vw,430px);text-align:center}
+.continue-box h2{font-size:22px}
+.continue-btn{
+  width:100%;padding:15px;border:0;border-radius:12px;background:#ff5722;color:#fff;
+  font-size:18px;font-weight:800
+}
+.hidden{display:none!important}
+.admin{
+  position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:30;
+  border:0;border-radius:999px;padding:10px 13px;background:#222;color:#fff;border:1px solid #555
+}
+.admin-panel{
+  position:fixed;inset:0;z-index:200;background:#0d0d0d;overflow:auto;
+  padding:calc(18px + env(safe-area-inset-top)) 16px calc(30px + env(safe-area-inset-bottom))
+}
+.admin-inner{max-width:720px;margin:auto}
+.admin-panel h2{margin-top:0}
+.field{margin:14px 0}
+.field label{display:block;margin-bottom:7px;font-weight:700}
+.field input{
+  width:100%;padding:13px;border-radius:10px;border:1px solid #444;
+  background:#181818;color:#fff;font-size:16px
+}
+.admin-actions{display:flex;gap:8px;flex-wrap:wrap}
+.admin-actions button{
+  flex:1;min-width:130px;padding:13px;border:0;border-radius:10px;font-weight:800
+}
+.save{background:#ff5722;color:#fff}
+.reset{background:#333;color:#fff}
+.logout{background:#8b0000;color:#fff}
+.status{margin-top:12px;color:#aaa;line-height:1.5}
+.small{font-size:12px;color:#888}
+</style>
+</head>
+
+<body>
+
+<header class="header">
+  <h1>📰 TRANG ĐỌC</h1>
+</header>
+
+<main class="container">
+  <article class="article">
+    <h2 id="articleTitle">Tin tức mới nhất</h2>
+    <p id="articleText">Nội dung bài viết của bạn ở đây.</p>
+  </article>
+
+  <section class="video-card locked" id="card1">
+    <div class="video-title">🎬 Video 1</div>
+    <video id="video1" playsinline webkit-playsinline preload="metadata">
+      <source id="source1" src="https://www.image2url.com/r2/default/videos/1788115083902-59c778f3-9b58-45f1-acb5-ca0f3a2b0a99.mov" type="video/quicktime">
+    </video>
+    <button class="video-overlay" id="play1" onclick="playVideo(1)">▶</button>
+    <div class="custom-controls">
+      <input class="progress" id="progress1" type="range" min="0" max="100" value="0" step="0.1">
+      <div class="control-row">
+        <button class="ctrl" onclick="toggleVideo(1)">▶/⏸</button>
+        <span class="time" id="time1">0:00 / 0:00</span>
+        <button class="ctrl" onclick="fullscreenVideo(1)">⛶</button>
+      </div>
+    </div>
+    <div class="sound-note">🔊 Âm thanh sẽ bật khi người dùng bấm Play.</div>
+  </section>
+
+  <section class="video-card locked" id="card2">
+    <div class="video-title">🎬 Video 2</div>
+    <video id="video2" playsinline webkit-playsinline preload="metadata">
+      <source id="source2" src="https://www.image2url.com/r2/default/videos/1788113671718-e99e92fd-16e6-4090-97eb-f2fe84a64aa1.mp4" type="video/mp4">
+    </video>
+    <button class="video-overlay" id="play2" onclick="playVideo(2)">▶</button>
+    <div class="custom-controls">
+      <input class="progress" id="progress2" type="range" min="0" max="100" value="0" step="0.1">
+      <div class="control-row">
+        <button class="ctrl" onclick="toggleVideo(2)">▶/⏸</button>
+        <span class="time" id="time2">0:00 / 0:00</span>
+        <button class="ctrl" onclick="fullscreenVideo(2)">⛶</button>
+      </div>
+    </div>
+    <div class="sound-note">🔊 Âm thanh sẽ bật khi người dùng bấm Play.</div>
+  </section>
+</main>
+
+<button class="admin" onclick="openAdmin()">⚙️ Quản lý</button>
+
+<!-- QUẢNG CÁO -->
+<div class="overlay" id="adOverlay">
+  <div class="ad-box">
+    <img id="adImage" src="https://cdn.phototourl.com/free/2026-08-30-aae2c0d2-94f6-45e3-8ae9-5504adb3c4e8.jpg" alt="Quảng cáo">
+    <button class="close-ad" onclick="goShopee()">✕ Đóng quảng cáo & mở Shopee</button>
+  </div>
+</div>
+
+<!-- TRANG TIẾP TỤC -->
+<div class="overlay hidden" id="continueOverlay">
+  <div class="continue-box">
+    <h2>Đã hoàn tất bước Shopee</h2>
+    <p>Nhấn nút bên dưới để tiếp tục.</p>
+    <button class="continue-btn" onclick="unlockVideos()">▶ MỞ KHÓA VIDEO 1 + VIDEO 2</button>
+  </div>
+</div>
+
+<!-- ĐĂNG NHẬP QUẢN LÝ -->
+<div class="overlay hidden" id="loginOverlay">
+  <div class="ad-box" style="padding:20px">
+    <h2>🔐 Quản lý trang</h2>
+    <input id="passwordInput" type="password" inputmode="numeric" placeholder="Nhập mật khẩu"
+      style="width:100%;padding:13px;border-radius:10px;border:1px solid #444;background:#181818;color:#fff;font-size:17px">
+    <button class="close-ad" onclick="loginAdmin()">Đăng nhập</button>
+    <button class="ctrl" onclick="closeLogin()">Hủy</button>
+  </div>
+</div>
+
+<!-- BẢNG QUẢN LÝ -->
+<div class="admin-panel hidden" id="adminPanel">
+  <div class="admin-inner">
+    <h2>⚙️ Quản lý trang</h2>
+    <p class="small">Mật khẩu hiện tại: 2005. Các thay đổi được lưu trên thiết bị bằng localStorage.</p>
+
+    <div class="field">
+      <label>Tiêu đề bài viết</label>
+      <input id="adminTitle">
+    </div>
+
+    <div class="field">
+      <label>Nội dung bài viết</label>
+      <input id="adminText">
+    </div>
+
+    <div class="field">
+      <label>URL Video 1</label>
+      <input id="adminVideo1" type="url" placeholder="https://...mp4">
+    </div>
+
+    <div class="field">
+      <label>URL Video 2</label>
+      <input id="adminVideo2" type="url" placeholder="https://...mp4">
+    </div>
+
+    <div class="field">
+      <label>URL ảnh quảng cáo</label>
+      <input id="adminAd" type="url" placeholder="https://...jpg">
+    </div>
+
+    <div class="field">
+      <label>Link Shopee</label>
+      <input id="adminShopee" type="url" placeholder="https://s.shopee.vn/...">
+    </div>
+
+    <div class="admin-actions">
+      <button class="save" onclick="saveSettings()">💾 Lưu thay đổi</button>
+      <button class="reset" onclick="resetSettings()">↩ Khôi phục mặc định</button>
+      <button class="logout" onclick="logoutAdmin()">Đóng quản lý</button>
+    </div>
+
+    <div class="status" id="adminStatus"></div>
+  </div>
+</div>
+
+<script>
+const DEFAULTS = {
+  title: "Tin tức mới nhất",
+  text: "Nội dung bài viết của bạn ở đây.",
+  video1: "https://www.image2url.com/r2/default/videos/1788115083902-59c778f3-9b58-45f1-acb5-ca0f3a2b0a99.mov",
+  video2: "https://www.image2url.com/r2/default/videos/1788113671718-e99e92fd-16e6-4090-97eb-f2fe84a64aa1.mp4",
+  ad: "https://cdn.phototourl.com/free/2026-08-30-aae2c0d2-94f6-45e3-8ae9-5504adb3c4e8.jpg",
+  shopee: "https://s.shopee.vn/1A02Az3dp"
+};
+
+const PASSWORD = "2005";
+let settings = JSON.parse(localStorage.getItem("newsSettings") || "null") || DEFAULTS;
+let unlocked = sessionStorage.getItem("videosUnlocked") === "1";
+let adminLogged = false;
+
+function applySettings(){
+  document.getElementById("articleTitle").textContent = settings.title;
+  document.getElementById("articleText").textContent = settings.text;
+  document.getElementById("adImage").src = settings.ad;
+
+  const s1 = document.getElementById("source1");
+  const s2 = document.getElementById("source2");
+  s1.src = settings.video1;
+  s2.src = settings.video2;
+
+  document.getElementById("video1").load();
+  document.getElementById("video2").load();
+
+  document.getElementById("adminTitle").value = settings.title;
+  document.getElementById("adminText").value = settings.text;
+  document.getElementById("adminVideo1").value = settings.video1;
+  document.getElementById("adminVideo2").value = settings.video2;
+  document.getElementById("adminAd").value = settings.ad;
+  document.getElementById("adminShopee").value = settings.shopee;
+}
+
+function lockVideos(){
+  document.getElementById("card1").classList.add("locked");
+  document.getElementById("card2").classList.add("locked");
+}
+
+function unlockVideos(){
+  unlocked = true;
+  sessionStorage.setItem("videosUnlocked","1");
+  document.getElementById("continueOverlay").classList.add("hidden");
+  document.getElementById("adOverlay").classList.add("hidden");
+  document.getElementById("card1").classList.remove("locked");
+  document.getElementById("card2").classList.remove("locked");
+}
+
+function goShopee(){
+  sessionStorage.setItem("shopeeOpened","1");
+  document.getElementById("adOverlay").classList.add("hidden");
+  document.getElementById("continueOverlay").classList.remove("hidden");
+
+  // Trình duyệt/iOS có thể quyết định mở app Shopee hoặc trang web.
+  window.location.href = settings.shopee;
+}
+
+function formatTime(sec){
+  if(!isFinite(sec)) return "0:00";
+  const m = Math.floor(sec/60);
+  const s = Math.floor(sec%60).toString().padStart(2,"0");
+  return m + ":" + s;
+}
+
+function playVideo(n){
+  if(!unlocked) return;
+  const v = document.getElementById("video"+n);
+
+  // Đây là hành động trực tiếp của người dùng nên Safari/iPhone cho phép bật âm thanh.
+  v.muted = false;
+  v.volume = 1;
+  v.play().then(()=>{
+    document.getElementById("play"+n).classList.add("hidden");
+  }).catch(()=>{
+    // Nếu Safari vẫn chặn âm thanh, người dùng có thể bấm lại Play.
+  });
+}
+
+function toggleVideo(n){
+  if(!unlocked) return;
+  const v = document.getElementById("video"+n);
+  if(v.paused){
+    playVideo(n);
+  }else{
+    v.pause();
+    document.getElementById("play"+n).classList.remove("hidden");
+  }
+}
+
+function fullscreenVideo(n){
+  const v = document.getElementById("video"+n);
+  if(v.requestFullscreen) v.requestFullscreen();
+  else if(v.webkitEnterFullscreen) v.webkitEnterFullscreen();
+}
+
+[1,2].forEach(n=>{
+  const v = document.getElementById("video"+n);
+  const p = document.getElementById("progress"+n);
+  const t = document.getElementById("time"+n);
+
+  v.addEventListener("timeupdate",()=>{
+    if(v.duration){
+      p.value = (v.currentTime/v.duration)*100;
+      t.textContent = formatTime(v.currentTime)+" / "+formatTime(v.duration);
+    }
+  });
+
+  v.addEventListener("loadedmetadata",()=>{
+    t.textContent = "0:00 / "+formatTime(v.duration);
+  });
+
+  v.addEventListener("play",()=>{
+    document.getElementById("play"+n).classList.add("hidden");
+  });
+
+  v.addEventListener("pause",()=>{
+    document.getElementById("play"+n).classList.remove("hidden");
+  });
+
+  p.addEventListener("input",()=>{
+    if(v.duration) v.currentTime = (p.value/100)*v.duration;
+  });
+
+  v.addEventListener("click",()=>{
+    if(unlocked) toggleVideo(n);
+  });
+});
+
+function openAdmin(){
+  if(adminLogged){
+    document.getElementById("adminPanel").classList.remove("hidden");
+    return;
+  }
+  document.getElementById("loginOverlay").classList.remove("hidden");
+  setTimeout(()=>document.getElementById("passwordInput").focus(),100);
+}
+
+function closeLogin(){
+  document.getElementById("loginOverlay").classList.add("hidden");
+  document.getElementById("passwordInput").value = "";
+}
+
+function loginAdmin(){
+  const pass = document.getElementById("passwordInput").value;
+  if(pass === PASSWORD){
+    adminLogged = true;
+    closeLogin();
+    applySettings();
+    document.getElementById("adminPanel").classList.remove("hidden");
+    document.getElementById("adminStatus").textContent = "✅ Đăng nhập thành công.";
+  }else{
+    alert("Sai mật khẩu.");
+  }
+}
+
+function saveSettings(){
+  if(!adminLogged) return;
+
+  settings = {
+    title: document.getElementById("adminTitle").value.trim() || DEFAULTS.title,
+    text: document.getElementById("adminText").value.trim() || DEFAULTS.text,
+    video1: document.getElementById("adminVideo1").value.trim() || DEFAULTS.video1,
+    video2: document.getElementById("adminVideo2").value.trim() || DEFAULTS.video2,
+    ad: document.getElementById("adminAd").value.trim() || DEFAULTS.ad,
+    shopee: document.getElementById("adminShopee").value.trim() || DEFAULTS.shopee
+  };
+
+  localStorage.setItem("newsSettings", JSON.stringify(settings));
+  applySettings();
+  document.getElementById("adminStatus").textContent =
+    "✅ Đã lưu. Lưu ý: thay đổi này chỉ áp dụng trên trình duyệt/thiết bị đang dùng.";
+}
+
+function resetSettings(){
+  if(!adminLogged) return;
+  settings = {...DEFAULTS};
+  localStorage.setItem("newsSettings", JSON.stringify(settings));
+  applySettings();
+  document.getElementById("adminStatus").textContent = "↩ Đã khôi phục mặc định.";
+}
+
+function logoutAdmin(){
+  adminLogged = false;
+  document.getElementById("adminPanel").classList.add("hidden");
+}
+
+// Trạng thái lần đầu mở trang.
+if(unlocked){
+  document.getElementById("adOverlay").classList.add("hidden");
+  document.getElementById("continueOverlay").classList.add("hidden");
+  document.getElementById("card1").classList.remove("locked");
+  document.getElementById("card2").classList.remove("locked");
+}else{
+  lockVideos();
+}
+
+applySettings();
+</script>
+
+</body>
+</html>
