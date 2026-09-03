@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Tin Tức - Video</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#f3f4f6;color:#111}
+header{background:#111827;color:#fff;padding:16px;text-align:center;font-size:21px;font-weight:800;position:sticky;top:0;z-index:10}
+.container{max-width:760px;margin:auto;padding:14px}
+.article{background:#fff;border-radius:18px;padding:16px;box-shadow:0 4px 18px #00000012}
+.article h1{font-size:24px;margin:4px 0 12px}
+.article p{line-height:1.6;color:#444}
+.video-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.video-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 3px 12px #00000012}
+.video-card video{width:100%;display:block;background:#000;aspect-ratio:9/16;object-fit:cover}
+.video-title{font-weight:700;padding:10px 12px}
+.admin-btn{position:fixed;right:12px;bottom:12px;border:0;border-radius:999px;background:#111827;color:#fff;padding:11px 15px;font-weight:700;z-index:20}
+
+#adOverlay{position:fixed;inset:0;background:#000b;z-index:100;display:flex;align-items:center;justify-content:center;padding:18px}
+.ad-box{width:min(430px,100%);background:#fff;border-radius:20px;overflow:hidden;position:relative;box-shadow:0 12px 50px #0008}
+.ad-box img{width:100%;display:block;max-height:70vh;object-fit:cover}
+.ad-close{position:absolute;right:10px;top:10px;width:42px;height:42px;border:0;border-radius:50%;background:#000b;color:#fff;font-size:25px;line-height:42px}
+.ad-note{text-align:center;padding:12px;font-size:13px;color:#555}
+#adOverlay.hidden{display:none}
+
+#adminPanel{display:none;position:fixed;inset:0;background:#f3f4f6;z-index:200;overflow:auto}
+.admin-wrap{max-width:760px;margin:auto;padding:16px}
+.admin-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.admin-top h2{margin:0}
+.close-admin{border:0;background:#111827;color:#fff;border-radius:10px;padding:10px 14px}
+.box{background:#fff;border-radius:16px;padding:15px;margin:12px 0;box-shadow:0 3px 12px #0000000d}
+label{display:block;font-weight:700;margin:10px 0 6px}
+input{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;font-size:16px}
+button.primary{border:0;background:#2563eb;color:#fff;border-radius:10px;padding:12px 16px;font-weight:800;margin-top:12px}
+button.danger{border:0;background:#dc2626;color:#fff;border-radius:9px;padding:8px 10px;font-weight:700}
+.video-row{border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin-top:10px}
+.row-head{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.small{font-size:13px;color:#6b7280;line-height:1.45}
+.admin-login{max-width:420px;margin:15vh auto;padding:20px}
+.status{margin-top:10px;font-weight:700}
+@media(max-width:560px){
+ .video-grid{grid-template-columns:1fr 1fr}
+ .article h1{font-size:21px}
+}
+</style>
+</head>
+<body>
+
+<header>TIN TỨC MỚI NHẤT</header>
+
+<main class="container">
+  <article class="article">
+    <h1>Video tin tức</h1>
+    <p>Nội dung bài viết của bạn. Người đọc mở trang sẽ thấy ảnh quảng cáo trước, bấm <b>×</b> để mở Shopee, sau đó các video được hiển thị bên dưới.</p>
+    <section id="videoGrid" class="video-grid"></section>
+  </article>
+</main>
+
+<button class="admin-btn" onclick="openAdmin()">⚙️ Quản lý</button>
+
+<!-- QUẢNG CÁO -->
+<div id="adOverlay">
+  <div class="ad-box">
+    <button class="ad-close" onclick="closeAd()">×</button>
+    <img id="adImage" src="https://cdn.phototourl.com/free/2026-09-01-8b75257c-815d-42e5-9fa2-bcf0ae019810.jpg" alt="Quảng cáo">
+    <div class="ad-note">Bấm × để tiếp tục</div>
+  </div>
+</div>
+
+<!-- TRANG QUẢN LÝ -->
+<div id="adminPanel">
+  <div id="loginBox" class="admin-login box">
+    <h2>🔐 Trang quản lý</h2>
+    <p class="small">Mật khẩu quản lý mặc định: <b>hoang2005@</b></p>
+    <label>Mật khẩu</label>
+    <input id="passwordInput" type="password" placeholder="Nhập mật khẩu">
+    <button class="primary" onclick="login()">Đăng nhập</button>
+    <div id="loginStatus" class="status"></div>
+  </div>
+
+  <div id="adminContent" class="admin-wrap" style="display:none">
+    <div class="admin-top">
+      <h2>⚙️ Quản lý nội dung</h2>
+      <button class="close-admin" onclick="closeAdmin()">Đóng</button>
+    </div>
+
+    <div class="box">
+      <h3>🖼️ Ảnh quảng cáo</h3>
+      <label>URL ảnh quảng cáo</label>
+      <input id="adImageInput" placeholder="https://...jpg">
+      <button class="primary" onclick="saveAd()">Lưu ảnh quảng cáo</button>
+    </div>
+
+    <div class="box">
+      <h3>🛒 Link Shopee</h3>
+      <label>Link Shopee</label>
+      <input id="shopeeInput" placeholder="https://s.shopee.vn/...">
+      <button class="primary" onclick="saveShopee()">Lưu link Shopee</button>
+      <p class="small">Khi người đọc bấm ×, trang sẽ cố mở link Shopee. Việc tự chuyển sang app Shopee phụ thuộc iPhone/iOS và ứng dụng Shopee.</p>
+    </div>
+
+    <div class="box">
+      <h3>🎬 Danh sách video</h3>
+      <div id="videoAdminList"></div>
+      <button class="primary" onclick="addVideo()">＋ Thêm video</button>
+      <button class="primary" onclick="saveVideos()">💾 Lưu tất cả video</button>
+    </div>
+
+    <div class="box">
+      <h3>📝 Tiêu đề bài viết</h3>
+      <label>Tiêu đề</label>
+      <input id="titleInput">
+      <button class="primary" onclick="saveTitle()">Lưu tiêu đề</button>
+    </div>
+
+    <div class="box">
+      <button class="danger" onclick="resetData()">↩️ Khôi phục dữ liệu mặc định</button>
+      <p class="small">Lưu ý: bản HTML một-file này lưu thay đổi bằng localStorage trên trình duyệt của thiết bị. Nếu bạn muốn mọi người đều thấy nội dung mới, cần lưu dữ liệu ở máy chủ/database.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEFAULT_DATA = {
+  title: "Video tin tức",
+  adImage: "https://cdn.phototourl.com/free/2026-09-01-8b75257c-815d-42e5-9fa2-bcf0ae019810.jpg",
+  shopee: "https://s.shopee.vn/1A02Az3dp",
+  videos: [
+    {title:"Video 1", url:"https://www.image2url.com/r2/default/videos/1788243750857-2f9f3c74-032d-45fa-af63-040b3345843a.mp4"},
+    {title:"Video 2", url:"https://www.image2url.com/r2/default/videos/1788243750857-2f9f3c74-032d-45fa-af63-040b3345843a.mp4"}
+  ]
+};
+
+let data = JSON.parse(localStorage.getItem("newsVideoData") || "null") || DEFAULT_DATA;
+
+function render(){
+  document.getElementById("titleInput").value=data.title;
+  document.getElementById("adImage").src=data.adImage;
+  document.getElementById("adImageInput").value=data.adImage;
+  document.getElementById("shopeeInput").value=data.shopee;
+  document.querySelector(".article h1").textContent=data.title;
+
+  const grid=document.getElementById("videoGrid");
+  grid.innerHTML="";
+  data.videos.forEach((v,i)=>{
+    if(!v.url) return;
+    const card=document.createElement("div");
+    card.className="video-card";
+    card.innerHTML=`<video controls playsinline preload="metadata" src="${escapeAttr(v.url)}"></video>
+      <div class="video-title">${escapeHtml(v.title || "Video "+(i+1))}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+function escapeAttr(s){return escapeHtml(s)}
+
+function persist(){
+  localStorage.setItem("newsVideoData",JSON.stringify(data));
+  render();
+}
+
+function closeAd(){
+  document.getElementById("adOverlay").classList.add("hidden");
+  // Mở Shopee sau khi người đọc bấm X
+  const url=data.shopee;
+  if(url) window.location.href=url;
+}
+
+function openAdmin(){
+  document.getElementById("adminPanel").style.display="block";
+  document.getElementById("loginBox").style.display="block";
+  document.getElementById("adminContent").style.display="none";
+  document.getElementById("passwordInput").value="";
+  document.getElementById("loginStatus").textContent="";
+}
+function closeAdmin(){document.getElementById("adminPanel").style.display="none"}
+
+function login(){
+  const p=document.getElementById("passwordInput").value;
+  if(p==="hoang2005@"){
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("adminContent").style.display="block";
+    renderVideoAdmin();
+  }else{
+    document.getElementById("loginStatus").textContent="❌ Sai mật khẩu";
+  }
+}
+
+function saveAd(){
+  const v=document.getElementById("adImageInput").value.trim();
+  if(!v)return alert("Hãy nhập URL ảnh.");
+  data.adImage=v; persist(); alert("Đã lưu ảnh quảng cáo.");
+}
+function saveShopee(){
+  const v=document.getElementById("shopeeInput").value.trim();
+  if(!v)return alert("Hãy nhập link Shopee.");
+  data.shopee=v; persist(); alert("Đã lưu link Shopee.");
+}
+function saveTitle(){
+  const v=document.getElementById("titleInput").value.trim() || "Video tin tức";
+  data.title=v; persist(); alert("Đã lưu tiêu đề.");
+}
+
+function renderVideoAdmin(){
+  const box=document.getElementById("videoAdminList");
+  box.innerHTML="";
+  data.videos.forEach((v,i)=>{
+    const row=document.createElement("div");
+    row.className="video-row";
+    row.innerHTML=`
+      <div class="row-head"><b>Video ${i+1}</b>
+      <button class="danger" onclick="deleteVideo(${i})">Xóa</button></div>
+      <label>Tên video</label>
+      <input class="vtitle" data-i="${i}" value="${escapeAttr(v.title||"Video "+(i+1))}">
+      <label>URL video</label>
+      <input class="vurl" data-i="${i}" value="${escapeAttr(v.url||"")}" placeholder="https://...mp4">
+    `;
+    box.appendChild(row);
+  });
+}
+function addVideo(){
+  data.videos.push({title:"Video "+(data.videos.length+1),url:""});
+  renderVideoAdmin();
+}
+function deleteVideo(i){
+  if(data.videos.length<=1)return alert("Phải có ít nhất 1 video.");
+  data.videos.splice(i,1); renderVideoAdmin();
+}
+function saveVideos(){
+  document.querySelectorAll(".vtitle").forEach(el=>data.videos[+el.dataset.i].title=el.value.trim());
+  document.querySelectorAll(".vurl").forEach(el=>data.videos[+el.dataset.i].url=el.value.trim());
+  persist(); renderVideoAdmin(); alert("Đã lưu danh sách video.");
+}
+function resetData(){
+  if(confirm("Khôi phục toàn bộ dữ liệu mặc định?")){
+    data=JSON.parse(JSON.stringify(DEFAULT_DATA));
+    persist(); renderVideoAdmin();
+  }
+}
+
+render();
+</script>
+</body>
+</html>
