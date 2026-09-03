@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trang tin</title>
+<meta name="description" content="Trang tin">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#f5f5f5;color:#111}
+header{background:#111;color:#fff;padding:16px 18px;position:sticky;top:0;z-index:5}
+.wrap{max-width:760px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+h1{font-size:21px;margin:0}.btn{border:0;border-radius:10px;padding:10px 14px;font-size:15px;font-weight:600;cursor:pointer}
+.primary{background:#1677ff;color:#fff}.dark{background:#333;color:#fff}.danger{background:#e53935;color:#fff}.light{background:#eee;color:#111}
+main{padding:18px 12px}.card{background:#fff;border-radius:16px;padding:16px;margin:0 0 16px;box-shadow:0 2px 12px #0000000d}
+.meta{font-size:13px;color:#777;margin-bottom:8px}.title{font-size:20px;font-weight:750;margin:4px 0 10px}.text{white-space:pre-wrap;line-height:1.55}
+.media{width:100%;border-radius:12px;display:block;margin:12px 0;max-height:600px;object-fit:contain;background:#eee}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.empty{text-align:center;color:#777;padding:50px 10px}
+#admin{display:none}.panel{background:#fff;border-radius:16px;padding:16px;margin-bottom:16px}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}
+input,textarea{width:100%;border:1px solid #ddd;border-radius:10px;padding:11px;font:inherit;margin:6px 0 10px}
+textarea{min-height:100px;resize:vertical}label{font-size:14px;font-weight:650}
+.notice{padding:10px 12px;background:#fff8db;border-radius:10px;font-size:13px;margin-bottom:12px}
+.small{font-size:12px;color:#777}.linkbox{word-break:break-all;background:#f1f1f1;padding:9px;border-radius:8px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header>
+<div class="wrap top">
+<h1 id="siteTitle">Trang tin</h1>
+<div class="actions">
+<button class="btn dark" id="adminBtn" onclick="showAdmin()">Quản lý</button>
+<button class="btn light hidden" id="backBtn" onclick="showViewer()">Trang đọc</button>
+</div>
+</div>
+</header>
+
+<main class="wrap">
+<section id="viewer">
+<div id="list"></div>
+</section>
+
+<section id="admin">
+<div class="panel">
+<h2 style="margin-top:0">Quản lý tin</h2>
+<div class="notice">Mỗi tin được tạo một ID riêng. Link chia sẻ sẽ có dạng <b>?id=...</b>, nên mỗi ảnh/video có link khác nhau.</div>
+<label>Tiêu đề trang</label>
+<input id="newSiteTitle" placeholder="Trang tin">
+<label>Tiêu đề tin</label>
+<input id="title" placeholder="Ví dụ: Chi tiết nè">
+<label>Nội dung</label>
+<textarea id="body" placeholder="Nội dung tin..."></textarea>
+<label>URL ảnh/video (tuỳ chọn)</label>
+<input id="media" placeholder="https://...">
+<div class="row">
+<button class="btn primary" onclick="savePost()">+ Đăng tin mới</button>
+<button class="btn light" onclick="clearForm()">Xóa form</button>
+</div>
+</div>
+<div class="panel">
+<h3>Danh sách tin</h3>
+<div id="adminList"></div>
+</div>
+</section>
+</main>
+
+<script>
+const STORAGE="unique_share_posts_v1";
+const SETTINGS="unique_share_settings_v1";
+let posts=JSON.parse(localStorage.getItem(STORAGE)||"[]");
+let settings=JSON.parse(localStorage.getItem(SETTINGS)||'{"title":"Trang tin"}');
+
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+function save(){localStorage.setItem(STORAGE,JSON.stringify(posts));localStorage.setItem(SETTINGS,JSON.stringify(settings));}
+function makeId(){return Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7);}
+function baseUrl(){return location.href.split("?")[0].split("#")[0];}
+function postUrl(id){return baseUrl()+"?id="+encodeURIComponent(id);}
+
+function render(){
+ document.title=settings.title||"Trang tin";
+ document.getElementById("siteTitle").textContent=settings.title||"Trang tin";
+ const id=new URLSearchParams(location.search).get("id");
+ const arr=id?posts.filter(p=>p.id===id):posts;
+ const list=document.getElementById("list");
+ if(!arr.length){list.innerHTML='<div class="card empty">Chưa có tin nào.</div>';return;}
+ list.innerHTML=arr.map(p=>`
+ <article class="card">
+   <div class="meta">${new Date(p.created).toLocaleString("vi-VN")} · ID ${esc(p.id)}</div>
+   <div class="title">${esc(p.title)}</div>
+   ${p.media?`<img class="media" src="${esc(p.media)}" alt="" onerror="this.style.display='none'">`:""}
+   <div class="text">${esc(p.body)}</div>
+   <div class="actions">
+    <button class="btn primary" onclick="sharePost('${esc(p.id)}')">Chia sẻ</button>
+    <button class="btn light" onclick="copyLink('${esc(p.id)}')">Sao chép link</button>
+   </div>
+ </article>`).join("");
+}
+function renderAdmin(){
+ const box=document.getElementById("adminList");
+ if(!posts.length){box.innerHTML='<div class="small">Chưa có tin.</div>';return;}
+ box.innerHTML=posts.map(p=>`
+ <div class="card">
+  <b>${esc(p.title||"(Không tiêu đề)")}</b>
+  <div class="small">ID: ${esc(p.id)}</div>
+  <div class="linkbox">${esc(postUrl(p.id))}</div>
+  <div class="actions">
+   <button class="btn primary" onclick="sharePost('${esc(p.id)}')">Chia sẻ</button>
+   <button class="btn light" onclick="editPost('${esc(p.id)}')">Sửa</button>
+   <button class="btn danger" onclick="deletePost('${esc(p.id)}')">Xóa</button>
+  </div>
+ </div>`).join("");
+}
+function savePost(){
+ const title=document.getElementById("title").value.trim();
+ const body=document.getElementById("body").value.trim();
+ const media=document.getElementById("media").value.trim();
+ if(!title && !body){alert("Vui lòng nhập tiêu đề hoặc nội dung.");return;}
+ posts.unshift({id:makeId(),title,body,media,created:Date.now()});
+ settings.title=document.getElementById("newSiteTitle").value.trim()||settings.title||"Trang tin";
+ save();clearForm();render();renderAdmin();
+ alert("Đã đăng tin. Tin này có link riêng.");
+}
+function editPost(id){
+ const p=posts.find(x=>x.id===id);if(!p)return;
+ document.getElementById("title").value=p.title;
+ document.getElementById("body").value=p.body;
+ document.getElementById("media").value=p.media||"";
+ document.getElementById("newSiteTitle").value=settings.title||"";
+ posts=posts.filter(x=>x.id!==id);save();renderAdmin();
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function deletePost(id){
+ if(confirm("Xóa tin này?")){posts=posts.filter(x=>x.id!==id);save();render();renderAdmin();}
+}
+function clearForm(){["title","body","media"].forEach(id=>document.getElementById(id).value="");}
+async function copyLink(id){
+ const u=postUrl(id);
+ try{await navigator.clipboard.writeText(u);alert("Đã sao chép link.");}
+ catch(e){prompt("Sao chép link:",u);}
+}
+async function sharePost(id){
+ const p=posts.find(x=>x.id===id), u=postUrl(id);
+ if(navigator.share){try{await navigator.share({title:p?.title||settings.title,url:u});return;}catch(e){}}
+ await copyLink(id);
+}
+function showAdmin(){
+ const pass=prompt("Mật khẩu quản lý:");
+ if(pass!=="admin123"){if(pass!==null)alert("Sai mật khẩu.");return;}
+ document.getElementById("viewer").style.display="none";
+ document.getElementById("admin").style.display="block";
+ document.getElementById("adminBtn").classList.add("hidden");
+ document.getElementById("backBtn").classList.remove("hidden");
+ document.getElementById("newSiteTitle").value=settings.title||"Trang tin";
+ renderAdmin();
+}
+function showViewer(){
+ document.getElementById("admin").style.display="none";
+ document.getElementById("viewer").style.display="block";
+ document.getElementById("adminBtn").classList.remove("hidden");
+ document.getElementById("backBtn").classList.add("hidden");
+ render();
+}
+render();
+</script>
+</body>
+</html>
